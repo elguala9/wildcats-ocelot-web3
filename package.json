@@ -1,0 +1,32 @@
+{
+  "name": "wildcats-ocelot",
+  "version": "1.0.0",
+  "description": "Library web3 for the smart contract Ocelot",
+  "main": "index.js",
+  "scripts": {
+    "test": "ts-node ./test.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elguala9/wildcats-ocelot-web3.git"
+  },
+  "keywords": [
+    "web3"
+  ],
+  "author": "Luca Gualandi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/elguala9/wildcats-ocelot-web3/issues"
+  },
+  "homepage": "https://github.com/elguala9/wildcats-ocelot-web3#readme",
+  "dependencies": {
+    "@alch/alchemy-web3": "^1.4.1",
+    "web3": "^1.7.3"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.25",
+    "ts-node": "^10.7.0",
+    "tslib": "^2.4.0",
+    "typescript": "^4.6.3"
+  }
+}
