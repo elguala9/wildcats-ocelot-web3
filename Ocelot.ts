@@ -1,13 +1,13 @@
 import Web3 from "web3";
 const fs = require('fs');
-import Contract from 'web3-eth-contract';
+import { Contract } from 'web3-eth-contract';
 
 export class Ocelot{
     private config_path = "./config.json"
     private abi_path = "./abi.json"
     private CONFIG;
     private web3 : Web3;
-    private smart_contract : Contract.Contract;
+    private smart_contract : Contract;
     private account : string;
 
     constructor(provider : any, account : string){
