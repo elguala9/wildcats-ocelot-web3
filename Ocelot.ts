@@ -71,15 +71,6 @@ export class Ocelot{
       return this.smart_contract.methods.getPrice().call();
     }
 
-    public tryMintOcelot(...args: string[]): any{
-      if (args.length > 1)
-        throw 'Too much parameters';
-
-      //if (args.length == 0)
-        console.log(args[0]);
-      
-    }
-
     //configuration of the transction that is used when we start a mint transaction
     private transactionMintConfig() : any{
       return {
@@ -111,5 +102,5 @@ export class Ocelot{
       };
     }
 
-    
+
 }
