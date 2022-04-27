@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+    },
+    "file":[
+        "Ocelot.ts"
+    ]
+  }

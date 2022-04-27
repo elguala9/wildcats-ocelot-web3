@@ -35,24 +35,19 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 exports.__esModule = true;
 exports.Ocelot = void 0;
-var web3_1 = require("web3");
-var fs = require('fs');
+var web3_1 = __importDefault(require("web3"));
+var config_json_1 = __importDefault(require("./config.json"));
+var abi_json_1 = __importDefault(require("./abi.json"));
 var Ocelot = /** @class */ (function () {
     function Ocelot(provider, account) {
-        this.config_path = "./config.json";
-        this.abi_path = "./abi.json";
         this.web3 = new web3_1["default"](provider);
-        //this.web3.eth.defaultAccount = account;
         this.account = account;
-        var content = fs.readFileSync(this.config_path);
-        this.CONFIG = JSON.parse(content);
-        content = fs.readFileSync(this.abi_path);
-        var abi = JSON.parse(content);
-        this.smart_contract = new this.web3.eth.Contract(abi, this.CONFIG.CONTRACT_ADDRESS);
-        //this.smart_contract.defaultAccount = account;
-        //console.log(this.smart_contract);
+        this.smart_contract = new this.web3.eth.Contract(abi_json_1["default"], config_json_1["default"].CONTRACT_ADDRESS);
     }
     Ocelot.prototype.getCirculation = function () {
         return this.getCirculationNormal() + this.getCirculationCustom();
@@ -93,33 +88,35 @@ var Ocelot = /** @class */ (function () {
     Ocelot.prototype.getPrice = function () {
         return this.smart_contract.methods.getPrice().call();
     };
-    //configuration of the transction that is used when we start a mint transaction
-    Ocelot.prototype.transactionMintConfig = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var price;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.getPrice().then()];
-                    case 1:
-                        price = _a.sent();
-                        return [2 /*return*/, {
-                                gasLimit: String(this.CONFIG.GAS_LIMIT),
-                                to: this.CONFIG.CONTRACT_ADDRESS,
-                                from: this.account,
-                                value: price
-                            }];
-                }
-            });
-        });
+    Ocelot.prototype.getAvailabeNFTs = function () {
+        return this.smart_contract.methods.availabeNFTs().call();
     };
+    Ocelot.prototype.getWeb3 = function () {
+        return this.smart_contract;
+    };
+    Ocelot.prototype.getSmartContract = function () {
+        return this.web3;
+    };
+    Ocelot.prototype.getAccount = function () {
+        return this.account;
+    };
+    // Mint a normal Ocelot
     Ocelot.prototype.mintOcelot = function () {
         return __awaiter(this, void 0, void 0, function () {
             var config;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.transactionMintConfig()];
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _a = {
+                            gasLimit: String(config_json_1["default"].GAS_LIMIT),
+                            to: config_json_1["default"].CONTRACT_ADDRESS,
+                            from: this.account
+                        };
+                        return [4 /*yield*/, this.getPrice()];
                     case 1:
-                        config = _a.sent();
+                        config = (_a.value = _b.sent(),
+                            _a);
                         this.smart_contract.methods
                             .mintOcelot()
                             .send(config)
@@ -138,9 +135,62 @@ var Ocelot = /** @class */ (function () {
     //configuration of the transction that is used when we start a non-payable transaction
     Ocelot.prototype.transactionConfig = function () {
         return {
-            gasLimit: String(this.CONFIG.GAS_LIMIT),
-            to: this.CONFIG.CONTRACT_ADDRESS
+            gasLimit: String(config_json_1["default"].GAS_LIMIT),
+            to: config_json_1["default"].CONTRACT_ADDRESS,
+            from: this.account
         };
+    };
+    //Mint a common Ocelot
+    Ocelot.prototype.mintCustomOcelot = function () {
+        var config = this.transactionConfig();
+        this.smart_contract.methods
+            .mintCustomOcelot()
+            .send(config)
+            .once("error", function (err) {
+            console.log(err);
+            return "Sorry, something went wrong please try again later.";
+        })
+            .then(function (receipt) {
+            return receipt;
+        });
+    };
+    Ocelot.prototype.safeTransfer = function (to, token_id) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, this.safeTransferFrom(this.account, to, token_id)];
+            });
+        });
+    };
+    //
+    Ocelot.prototype.safeTransferFrom = function (from, to, token_id) {
+        return __awaiter(this, void 0, void 0, function () {
+            var config;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!this.web3.utils.isAddress(from))
+                            return [2 /*return*/, "From address is not valid"];
+                        if (!this.web3.utils.isAddress(to))
+                            return [2 /*return*/, "To address is not valid"];
+                        return [4 /*yield*/, this.getOwnerNFT(token_id)];
+                    case 1:
+                        if ((_a.sent()) !== from)
+                            return [2 /*return*/, "You are not owner of the token"];
+                        config = this.transactionConfig();
+                        this.smart_contract.methods
+                            .safeTransferFrom(from, to, token_id)
+                            .send(config)
+                            .once("error", function (err) {
+                            console.log(err);
+                            return "Sorry, something went wrong please try again later.";
+                        })
+                            .then(function (receipt) {
+                            return receipt;
+                        });
+                        return [2 /*return*/];
+                }
+            });
+        });
     };
     return Ocelot;
 }());
