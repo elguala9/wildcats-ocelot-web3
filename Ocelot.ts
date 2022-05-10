@@ -8,15 +8,19 @@ export class Ocelot{
     private web3 : Web3;
     private smart_contract : Contract;
     private account : string;
+    private MAX_CUSTOM_NFT : number;
+    private MAX_NORMAL_NFT : number;
 
     constructor(provider : any, account : string){      
         this.web3 = new Web3(provider);
         this.account = account;
         this.smart_contract = new this.web3.eth.Contract(ABI as AbiItem[],CONFIG.CONTRACT_ADDRESS);
+        this.MAX_CUSTOM_NFT = -1;
+        this.MAX_NORMAL_NFT = -1;
     }
 
-    public getCirculation(){
-      return this.getCirculationNormal() + this.getCirculationCustom();
+    public async getCirculation(){
+      return await this.getCirculationNormal() + await this.getCirculationCustom();
     }
 
     public getCirculationNormal(){
@@ -70,13 +74,31 @@ export class Ocelot{
     public getAvailabeNFTs(){
       return this.smart_contract.methods.availabeNFTs().call();
     }
-  
-    public getWeb3() : Contract{
-      return this.smart_contract;
+
+    public getTokenURI(token_id : number){
+      return this.smart_contract.methods.tokenURI(token_id).call();
     }
 
-    public getSmartContract() : Web3{
+    public async maxCustomNFTs(){
+      if(this.MAX_CUSTOM_NFT == -1)
+        this.MAX_CUSTOM_NFT = await this.smart_contract.methods.maxCustomNFTs().call();
+      else
+        return this.MAX_CUSTOM_NFT;
+    }
+
+    public async maxNormalNFTs(){
+      if(this.MAX_NORMAL_NFT == -1)
+        this.MAX_NORMAL_NFT = await this.smart_contract.methods.maxNormalNFTs().call();
+      else
+        return this.MAX_NORMAL_NFT;
+    }
+  
+    public getWeb3() : Web3{
       return this.web3;
+    }
+
+    public getSmartContract() : Contract{
+      return this.smart_contract;
     }
 
     public getAccount() : string{
@@ -84,10 +106,123 @@ export class Ocelot{
     }
 
 
+
+
+    private _getAddress(args: string[]){
+      if(args.length > 1)
+        throw "Too much argument";
+
+      if(args.length == 1)
+        if(this.web3.utils.isAddress(args[0]))
+          return args[0];
+        else
+          throw "Address is not valid";
+      else
+        return this.account;
+    }
+
+    /**
+      * call normalNftOwned(address) method of the smart contract
+      * @param {string} args - Address (Optional, if not passed will be used the address passed to the constructor)
+      * @return Number of normal NFTs owned by the address
+    */
+    public normalNftsOwned(...args: string[]){
+      return this.smart_contract.methods.normalNftsOwned(this._getAddress(args)).call();
+    }
+
+    /**
+      * call customNftOwned(address) method of the smart contract
+      * @param {string} args - Address (Optional, if not passed will be used the address passed to the constructor)
+      * @return Number of custom NFTs owned by the address
+    */
+    public customNftsOwned(...args: string[]){
+      return this.smart_contract.methods.customNftsOwned(this._getAddress(args)).call();
+    }
+
+    /**
+      * @param {string} args - Address (Optional, if not passed will be used the address passed to the constructor)
+      * @return List of custom NFTs owned by the address
+    */
+    public async listOfCustomNftsOwned(...args: string[]) : Promise<number[]>{
+      return this.listOfNftsOwned(this._getAddress(args), 0, await this.getCirculationCustom())
+    }
+
+    /**
+      * @param {string} args - Address (Optional, if not passed will be used the address passed to the constructor)
+      * @return List of normal NFTs owned by the address
+    */
+    public async listOfNormalNftsOwned(...args: string[]) : Promise<number[]>{
+      return this.listOfNftsOwned(this._getAddress(args), await this.maxCustomNFTs(), await this.getCirculationNormal())
+    }
+
+    private async listOfNftsOwned(address : string, start_id : number, circulation : number) : Promise<number[]>{
+      var nfts : Array<number> = new Array<number>();
+      for(let  i = start_id; i < circulation; i++)
+        if(await this.getOwnerNFT(i) === address)
+          nfts.push(i);
+      return nfts;
+    }
+
+    /**
+      * @param {number[]} token_id - List of the NFTs
+      * @return List of uri 
+    */
+     public async listOfURI(token_id: Array<number>){
+      var i = 0;
+      var uri : Array<number> = new Array<number>();
+      while (i < token_id.length) {
+        uri.push(await this.getTokenURI(token_id[i]));
+        i++;
+      }
+
+      return uri;
+    }
+
+    /**
+      * @return {number[]} - id of the nfts already minted
+    */
+    public async nftsMinted(){
+      let token_id : Array<number> = new Array<number>();
+      let custom_ids = await this.getCirculationCustom()
+      for(var i = 0; i < custom_ids; i++){
+        token_id.push(i);
+      }
+      
+      let normal_ids = await this.getCirculationNormal() + await this.maxCustomNFTs();
+      for(var i : number = await this.maxCustomNFTs(); i < normal_ids; i++){
+        token_id.push(i);
+      }
+
+      return token_id;
+    }
+
+    /**
+      * @return {number[], string[]} - id of the nft, uri of the nft
+    */
+    public async allURIs(){
+      let token_id : number[] = await this.nftsMinted();
+      return {ids : token_id, uris : await this.listOfURI(token_id)};
+    }
+
+    /**
+      * @param {string} args - Address (Optional, if not passed will be used the address passed to the constructor)
+      * @return List of custom uri owned by the address
+    */
+    public async listOfCustomURI(...args: string[]){
+      return await this.listOfURI(await this.listOfCustomNftsOwned(this._getAddress(args)));
+    }
+
+    /**
+      * @param {string} args - Address (Optional, if not passed will be used the address passed to the constructor)
+      * @return List of normal uri owned by the address
+    */
+     public async listOfNormalURI(...args: string[]){
+      return await this.listOfURI(await this.listOfNormalNftsOwned(this._getAddress(args)));
+    }
+    
+
     // Mint a normal Ocelot
     public async mintOcelot(){
-    
-    
       let config =  {
           gasLimit: String(CONFIG.GAS_LIMIT),
           to: CONFIG.CONTRACT_ADDRESS,
@@ -116,7 +251,7 @@ export class Ocelot{
       };
     }
 
-    //Mint a common Ocelot
+    //Mint a custom Ocelot
     public mintCustomOcelot(){
       
       let config = this.transactionConfig()
