@@ -1,10 +1,10 @@
 {
   "name": "wildcats-ocelot",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Library web3 for the smart contract Ocelot",
   "main": "Ocelot.js",
   "scripts": {
-    "test": "ts-node ./test.ts"
+    "test": "tsc && ts-node ./test.ts"
   },
   "repository": {
     "type": "git",
@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/elguala9/wildcats-ocelot-web3#readme",
   "dependencies": {
+    "ipfs-core": "^0.14.3",
     "web3": "^1.7.3"
   },
   "devDependencies": {

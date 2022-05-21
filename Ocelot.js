@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -35,6 +58,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -43,6 +73,10 @@ exports.Ocelot = void 0;
 var web3_1 = __importDefault(require("web3"));
 var config_json_1 = __importDefault(require("./config.json"));
 var abi_json_1 = __importDefault(require("./abi.json"));
+//import { IPFS } from 'ipfs'
+//import { IPFS } from 'ipfs-core'
+var IPFS = __importStar(require("ipfs-core"));
+var CID = require('cids');
 var Ocelot = /** @class */ (function () {
     function Ocelot(provider, account) {
         this.web3 = new web3_1["default"](provider);
@@ -89,9 +123,6 @@ var Ocelot = /** @class */ (function () {
     Ocelot.prototype.getSymbolCollection = function () {
         return this.smart_contract.methods.symbol().call();
     };
-    Ocelot.prototype.getUriNFT = function (token_id) {
-        return this.smart_contract.methods.tokenURI(token_id).call();
-    };
     Ocelot.prototype.getApproved = function (token_id) {
         return this.smart_contract.methods.getApproved(token_id).call();
     };
@@ -105,7 +136,21 @@ var Ocelot = /** @class */ (function () {
         return this.smart_contract.methods.availabeNFTs().call();
     };
     Ocelot.prototype.getTokenURI = function (token_id) {
-        return this.smart_contract.methods.tokenURI(token_id).call();
+        return __awaiter(this, void 0, void 0, function () {
+            var err_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, this.smart_contract.methods.tokenURI(token_id).call()];
+                    case 1: return [2 /*return*/, _a.sent()];
+                    case 2:
+                        err_1 = _a.sent();
+                        throw "Uri for token " + String(token_id) + " not found";
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
     };
     Ocelot.prototype.maxCustomNFTs = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -379,6 +424,117 @@ var Ocelot = /** @class */ (function () {
                     case 0:
                         _a = this.listOfURI;
                         return [4 /*yield*/, this.listOfNormalNftsOwned(this._getAddress(args))];
+                    case 1: return [4 /*yield*/, _a.apply(this, [_b.sent()])];
+                    case 2: return [2 /*return*/, _b.sent()];
+                }
+            });
+        });
+    };
+    // setting the IPFS, cannot be done in the constructor
+    Ocelot.prototype.setIPFS = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        if (!(this.node == null)) return [3 /*break*/, 2];
+                        _a = this;
+                        return [4 /*yield*/, IPFS.create()];
+                    case 1:
+                        _a.node = _b.sent();
+                        _b.label = 2;
+                    case 2: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    /**
+      * @param {string} CID - Identifier of the file into the IPFS
+      * @return the file in string format
+    */
+    Ocelot.prototype.getFileFromIPFS = function (CID) {
+        var e_1, _a;
+        return __awaiter(this, void 0, void 0, function () {
+            var stream, data, stream_1, stream_1_1, chunk, e_1_1;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0: return [4 /*yield*/, this.setIPFS()];
+                    case 1:
+                        _b.sent();
+                        console.log("CID:" + CID);
+                        stream = this.node.cat(CID.trim());
+                        data = '';
+                        _b.label = 2;
+                    case 2:
+                        _b.trys.push([2, 7, 8, 13]);
+                        stream_1 = __asyncValues(stream);
+                        _b.label = 3;
+                    case 3: return [4 /*yield*/, stream_1.next()];
+                    case 4:
+                        if (!(stream_1_1 = _b.sent(), !stream_1_1.done)) return [3 /*break*/, 6];
+                        chunk = stream_1_1.value;
+                        // chunks of data are returned as a Buffer, convert it back to a string
+                        data += chunk.toString();
+                        _b.label = 5;
+                    case 5: return [3 /*break*/, 3];
+                    case 6: return [3 /*break*/, 13];
+                    case 7:
+                        e_1_1 = _b.sent();
+                        e_1 = { error: e_1_1 };
+                        return [3 /*break*/, 13];
+                    case 8:
+                        _b.trys.push([8, , 11, 12]);
+                        if (!(stream_1_1 && !stream_1_1.done && (_a = stream_1["return"]))) return [3 /*break*/, 10];
+                        return [4 /*yield*/, _a.call(stream_1)];
+                    case 9:
+                        _b.sent();
+                        _b.label = 10;
+                    case 10: return [3 /*break*/, 12];
+                    case 11:
+                        if (e_1) throw e_1.error;
+                        return [7 /*endfinally*/];
+                    case 12: return [7 /*endfinally*/];
+                    case 13: return [2 /*return*/, data];
+                }
+            });
+        });
+    };
+    /**
+      * @param {number} token_id - The token id
+      * @return the CID
+    */
+    Ocelot.prototype.getCID = function (token_id) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _a = this.getCIDFromURI;
+                        return [4 /*yield*/, this.getTokenURI(token_id)];
+                    case 1: return [2 /*return*/, _a.apply(this, [_b.sent()])];
+                }
+            });
+        });
+    };
+    /**
+      * @param {string} uri - Uri of a nft
+      * @return the CID
+    */
+    Ocelot.prototype.getCIDFromURI = function (uri) {
+        return uri.replace("ipfs://", " ");
+    };
+    /**
+      * @param {number} token_id - The token id
+      * @return the json file
+    */
+    Ocelot.prototype.getJson = function (token_id) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _a = this.getFileFromIPFS;
+                        return [4 /*yield*/, this.getCID(token_id)];
                     case 1: return [4 /*yield*/, _a.apply(this, [_b.sent()])];
                     case 2: return [2 /*return*/, _b.sent()];
                 }

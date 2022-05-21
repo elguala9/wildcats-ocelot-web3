@@ -3,6 +3,10 @@ import { Contract } from 'web3-eth-contract';
 import CONFIG from './config.json'; 
 import ABI from './abi.json'; 
 import { AbiItem } from 'web3-utils'
+//import { IPFS } from 'ipfs'
+//import { IPFS } from 'ipfs-core'
+import * as IPFS from 'ipfs-core'
+const CID = require('cids')
 
 export class Ocelot{
     private web3 : Web3;
@@ -10,6 +14,7 @@ export class Ocelot{
     private account : string;
     private MAX_CUSTOM_NFT : number;
     private MAX_NORMAL_NFT : number;
+    private node;
 
     constructor(provider : any, account : string){      
         this.web3 = new Web3(provider);
@@ -17,6 +22,7 @@ export class Ocelot{
         this.smart_contract = new this.web3.eth.Contract(ABI as AbiItem[],CONFIG.CONTRACT_ADDRESS);
         this.MAX_CUSTOM_NFT = -1;
         this.MAX_NORMAL_NFT = -1;
+        
     }
 
     public async getCirculation(){
@@ -55,9 +61,7 @@ export class Ocelot{
       return this.smart_contract.methods.symbol().call();
     }
 
-    public getUriNFT(token_id : number){
-      return this.smart_contract.methods.tokenURI(token_id).call();
-    }
+      
 
     public getApproved(token_id : number){
       return this.smart_contract.methods.getApproved(token_id).call();
@@ -75,8 +79,13 @@ export class Ocelot{
       return this.smart_contract.methods.availabeNFTs().call();
     }
 
-    public getTokenURI(token_id : number){
-      return this.smart_contract.methods.tokenURI(token_id).call();
+    public async getTokenURI(token_id : number) : Promise<string> {
+      try{
+        return await this.smart_contract.methods.tokenURI(token_id).call();
+      }
+      catch (err){
+        throw "Uri for token " + String(token_id) + " not found"
+      }
     }
 
     public async maxCustomNFTs(){
@@ -169,7 +178,7 @@ export class Ocelot{
     */
      public async listOfURI(token_id: Array<number>){
       var i = 0;
-      var uri : Array<number> = new Array<number>();
+      var uri : Array<string> = new Array<string>();
       while (i < token_id.length) {
         uri.push(await this.getTokenURI(token_id[i]));
         i++;
@@ -179,7 +188,7 @@ export class Ocelot{
     }
 
     /**
-      * @return {number[]} - id of the nfts already minted
+      * @return {Array<number>} - id of the nfts already minted
     */
     public async nftsMinted(){
       let token_id : Array<number> = new Array<number>();
@@ -218,6 +227,53 @@ export class Ocelot{
     */
      public async listOfNormalURI(...args: string[]){
       return await this.listOfURI(await this.listOfNormalNftsOwned(this._getAddress(args)));
+    }
+
+    // setting the IPFS, cannot be done in the constructor
+    public async setIPFS(){
+      if(this.node == null)
+        this.node = await IPFS.create();
+    }
+
+    /**
+      * @param {string} CID - Identifier of the file into the IPFS
+      * @return the file in string format
+    */
+     public async getFileFromIPFS(CID : string) : Promise<string>{
+      await this.setIPFS();
+      console.log("CID:" + CID);
+      const stream = this.node.cat(CID.trim())
+      let data = ''
+      for await (const chunk of stream) {
+        // chunks of data are returned as a Buffer, convert it back to a string
+        data += chunk.toString()
+      }
+      return data;
+      
+    }
+
+    /**
+      * @param {number} token_id - The token id
+      * @return the CID
+    */
+    public async getCID(token_id : number) : Promise<string>{
+      return this.getCIDFromURI(await this.getTokenURI(token_id));
+    }
+
+    /**
+      * @param {string} uri - Uri of a nft
+      * @return the CID
+    */
+     public getCIDFromURI(uri : string) : string{
+      return uri.replace("ipfs://"," ");
+    }
+
+    /**
+      * @param {number} token_id - The token id
+      * @return the json file
+    */
+     public async getJson(token_id : number) : Promise<string>{
+      return await this.getFileFromIPFS(await this.getCID(token_id));
     }
     
 
