@@ -280,7 +280,7 @@ export class Ocelot{
     // Mint a normal Ocelot
     public async mintOcelot(){
       let config =  {
-          gasLimit: String(CONFIG.GAS_LIMIT),
+          gasLimit: (await this.web3.eth.getBlock("latest")).gasLimit,
           to: CONFIG.CONTRACT_ADDRESS,
           from : this.account,
           value: await this.getPrice()
@@ -299,18 +299,18 @@ export class Ocelot{
     }
 
     //configuration of the transction that is used when we start a non-payable transaction
-    private transactionConfig() : any{
+    private async transactionConfig(){
       return {
-        gasLimit: String(CONFIG.GAS_LIMIT),
+        gasLimit: (await this.web3.eth.getBlock("latest")).gasLimit,
         to: CONFIG.CONTRACT_ADDRESS,
         from : this.account
       };
     }
 
     //Mint a custom Ocelot
-    public mintCustomOcelot(){
+    public async mintCustomOcelot(){
       
-      let config = this.transactionConfig()
+      let config = await this.transactionConfig()
       
       this.smart_contract.methods
       .mintCustomOcelot()
@@ -338,7 +338,7 @@ export class Ocelot{
       if((await this.getOwnerNFT(token_id)) !== from)
         return "You are not owner of the token";
 
-      let config = this.transactionConfig()
+      let config = await this.transactionConfig()
       
       this.smart_contract.methods
       .safeTransferFrom(from, to, token_id)
