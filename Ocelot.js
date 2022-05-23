@@ -78,13 +78,17 @@ var abi_json_1 = __importDefault(require("./abi.json"));
 var IPFS = __importStar(require("ipfs-core"));
 var CID = require('cids');
 var Ocelot = /** @class */ (function () {
-    function Ocelot(provider, account) {
+    function Ocelot(provider, account, chain_id) {
         this.web3 = new web3_1["default"](provider);
         this.account = account;
-        this.smart_contract = new this.web3.eth.Contract(abi_json_1["default"], config_json_1["default"].CONTRACT_ADDRESS);
+        this.contract_address = config_json_1["default"]["CONTRACT_ADDRESS_" + chain_id];
+        this.smart_contract = new this.web3.eth.Contract(abi_json_1["default"], this.contract_address);
         this.MAX_CUSTOM_NFT = -1;
         this.MAX_NORMAL_NFT = -1;
     }
+    Ocelot.prototype.getContractAddress = function () {
+        return this.contract_address;
+    };
     Ocelot.prototype.getCirculation = function () {
         return __awaiter(this, void 0, void 0, function () {
             var _a;
@@ -304,8 +308,78 @@ var Ocelot = /** @class */ (function () {
         });
     };
     /**
-      * @param {number[]} token_id - List of the NFTs
-      * @return List of uri
+      * @return {Promise<Array<number>>} - id of the nfts already minted
+    */
+    Ocelot.prototype.nftsMinted = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0: return [4 /*yield*/, this.customNftsMinted()];
+                    case 1:
+                        _b = (_a = (_c.sent())).concat;
+                        return [4 /*yield*/, this.normalNftsMinted()];
+                    case 2: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
+                }
+            });
+        });
+    };
+    /**
+      * @return {Promise<Array<number>>} - id of the nfts already minted
+    */
+    Ocelot.prototype.customNftsMinted = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var token_id, custom_ids, i;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        token_id = new Array();
+                        return [4 /*yield*/, this.getCirculationCustom()];
+                    case 1:
+                        custom_ids = _a.sent();
+                        for (i = 0; i < custom_ids; i++) {
+                            token_id.push(i);
+                        }
+                        return [2 /*return*/, token_id];
+                }
+            });
+        });
+    };
+    /**
+      * @return {Promise<Array<number>>} - id of the nfts already minted
+    */
+    Ocelot.prototype.normalNftsMinted = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var token_id, normal_ids, _a, i;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        token_id = new Array();
+                        return [4 /*yield*/, this.getCirculationNormal()];
+                    case 1:
+                        _a = (_b.sent());
+                        return [4 /*yield*/, this.maxCustomNFTs()];
+                    case 2:
+                        normal_ids = _a + (_b.sent());
+                        return [4 /*yield*/, this.maxCustomNFTs()];
+                    case 3:
+                        i = _b.sent();
+                        _b.label = 4;
+                    case 4:
+                        if (!(i < normal_ids)) return [3 /*break*/, 6];
+                        token_id.push(i);
+                        _b.label = 5;
+                    case 5:
+                        i++;
+                        return [3 /*break*/, 4];
+                    case 6: return [2 /*return*/, token_id];
+                }
+            });
+        });
+    };
+    /**
+      * @param {Array<number>} token_id - List of the NFTs
+      * @return {Promise<string[]>} List of uri
     */
     Ocelot.prototype.listOfURI = function (token_id) {
         return __awaiter(this, void 0, void 0, function () {
@@ -330,45 +404,7 @@ var Ocelot = /** @class */ (function () {
         });
     };
     /**
-      * @return {number[]} - id of the nfts already minted
-    */
-    Ocelot.prototype.nftsMinted = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var token_id, custom_ids, i, normal_ids, _a, i;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        token_id = new Array();
-                        return [4 /*yield*/, this.getCirculationCustom()];
-                    case 1:
-                        custom_ids = _b.sent();
-                        for (i = 0; i < custom_ids; i++) {
-                            token_id.push(i);
-                        }
-                        return [4 /*yield*/, this.getCirculationNormal()];
-                    case 2:
-                        _a = (_b.sent());
-                        return [4 /*yield*/, this.maxCustomNFTs()];
-                    case 3:
-                        normal_ids = _a + (_b.sent());
-                        return [4 /*yield*/, this.maxCustomNFTs()];
-                    case 4:
-                        i = _b.sent();
-                        _b.label = 5;
-                    case 5:
-                        if (!(i < normal_ids)) return [3 /*break*/, 7];
-                        token_id.push(i);
-                        _b.label = 6;
-                    case 6:
-                        i++;
-                        return [3 /*break*/, 5];
-                    case 7: return [2 /*return*/, token_id];
-                }
-            });
-        });
-    };
-    /**
-      * @return {number[], string[]} - id of the nft, uri of the nft
+      * @return {Promise<{ids : number[] , uris : string[]}>} - id of the nft, uri of the nft
     */
     Ocelot.prototype.allURIs = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -388,7 +424,7 @@ var Ocelot = /** @class */ (function () {
     };
     /**
       * @param {string} args - Address (Optional, if not passed will be used the address passed to the constructor)
-      * @return List of custom uri owned by the address
+      * @return {Promise<string[]>} List of custom uri owned by the address
     */
     Ocelot.prototype.listOfCustomURI = function () {
         var args = [];
@@ -410,7 +446,7 @@ var Ocelot = /** @class */ (function () {
     };
     /**
       * @param {string} args - Address (Optional, if not passed will be used the address passed to the constructor)
-      * @return List of normal uri owned by the address
+      * @return {Promise<string[]>} List of normal uri owned by the address
     */
     Ocelot.prototype.listOfNormalURI = function () {
         var args = [];
@@ -438,13 +474,27 @@ var Ocelot = /** @class */ (function () {
                 switch (_b.label) {
                     case 0:
                         if (!(this.node == null)) return [3 /*break*/, 2];
+                        console.log("hola");
                         _a = this;
                         return [4 /*yield*/, IPFS.create()];
                     case 1:
                         _a.node = _b.sent();
+                        console.log(typeof this.node);
                         _b.label = 2;
                     case 2: return [2 /*return*/];
                 }
+            });
+        });
+    };
+    // setting the IPFS, cannot be done in the constructor
+    Ocelot.prototype.disconnectIPFS = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                if (this.node != null) {
+                    console.log("hola2");
+                    this.node.swarm.disconnect();
+                }
+                return [2 /*return*/];
             });
         });
     };
@@ -474,6 +524,7 @@ var Ocelot = /** @class */ (function () {
                         if (!(stream_1_1 = _b.sent(), !stream_1_1.done)) return [3 /*break*/, 6];
                         chunk = stream_1_1.value;
                         // chunks of data are returned as a Buffer, convert it back to a string
+                        console.log("CIAO_LOOP");
                         data += chunk.toString();
                         _b.label = 5;
                     case 5: return [3 /*break*/, 3];
@@ -494,7 +545,9 @@ var Ocelot = /** @class */ (function () {
                         if (e_1) throw e_1.error;
                         return [7 /*endfinally*/];
                     case 12: return [7 /*endfinally*/];
-                    case 13: return [2 /*return*/, data];
+                    case 13:
+                        console.log("CIAO_2");
+                        return [2 /*return*/, data];
                 }
             });
         });
@@ -541,6 +594,53 @@ var Ocelot = /** @class */ (function () {
             });
         });
     };
+    /**
+      * @param {Array<number>} token_id - List of the NFTs
+      * @return {Promise<string[]>} List of json
+    */
+    Ocelot.prototype.listOfJson = function (token_id) {
+        return __awaiter(this, void 0, void 0, function () {
+            var i, uri, _a, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        i = 0;
+                        uri = new Array();
+                        _c.label = 1;
+                    case 1:
+                        if (!(i < token_id.length)) return [3 /*break*/, 3];
+                        _b = (_a = uri).push;
+                        return [4 /*yield*/, this.getJson(token_id[i])];
+                    case 2:
+                        _b.apply(_a, [_c.sent()]);
+                        i++;
+                        return [3 /*break*/, 1];
+                    case 3: return [2 /*return*/, uri];
+                }
+            });
+        });
+    };
+    /**
+      *
+      * @return {Promise<{ids : number[] , uris : string[]}>} all json file of NFTs minted
+    */
+    Ocelot.prototype.allJsons = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var token_id;
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0: return [4 /*yield*/, this.nftsMinted()];
+                    case 1:
+                        token_id = _b.sent();
+                        console.log(token_id);
+                        _a = { ids: token_id };
+                        return [4 /*yield*/, this.listOfJson(token_id)];
+                    case 2: return [2 /*return*/, (_a.json = _b.sent(), _a)];
+                }
+            });
+        });
+    };
     // Mint a normal Ocelot
     Ocelot.prototype.mintOcelot = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -549,13 +649,14 @@ var Ocelot = /** @class */ (function () {
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        _a = {
-                            gasLimit: String(config_json_1["default"].GAS_LIMIT),
-                            to: config_json_1["default"].CONTRACT_ADDRESS,
-                            from: this.account
-                        };
-                        return [4 /*yield*/, this.getPrice()];
+                        _a = {};
+                        return [4 /*yield*/, this.web3.eth.getBlock("latest")];
                     case 1:
+                        _a.gasLimit = (_b.sent()).gasLimit,
+                            _a.to = this.contract_address,
+                            _a.from = this.account;
+                        return [4 /*yield*/, this.getPrice()];
+                    case 2:
                         config = (_a.value = _b.sent(),
                             _a);
                         this.smart_contract.methods
@@ -575,24 +676,43 @@ var Ocelot = /** @class */ (function () {
     };
     //configuration of the transction that is used when we start a non-payable transaction
     Ocelot.prototype.transactionConfig = function () {
-        return {
-            gasLimit: String(config_json_1["default"].GAS_LIMIT),
-            to: config_json_1["default"].CONTRACT_ADDRESS,
-            from: this.account
-        };
+        return __awaiter(this, void 0, void 0, function () {
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _a = {};
+                        return [4 /*yield*/, this.web3.eth.getBlock("latest")];
+                    case 1: return [2 /*return*/, (_a.gasLimit = (_b.sent()).gasLimit,
+                            _a.to = this.contract_address,
+                            _a.from = this.account,
+                            _a)];
+                }
+            });
+        });
     };
     //Mint a custom Ocelot
     Ocelot.prototype.mintCustomOcelot = function () {
-        var config = this.transactionConfig();
-        this.smart_contract.methods
-            .mintCustomOcelot()
-            .send(config)
-            .once("error", function (err) {
-            console.log(err);
-            return "Sorry, something went wrong please try again later.";
-        })
-            .then(function (receipt) {
-            return receipt;
+        return __awaiter(this, void 0, void 0, function () {
+            var config;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.transactionConfig()];
+                    case 1:
+                        config = _a.sent();
+                        this.smart_contract.methods
+                            .mintCustomOcelot()
+                            .send(config)
+                            .once("error", function (err) {
+                            console.log(err);
+                            return "Sorry, something went wrong please try again later.";
+                        })
+                            .then(function (receipt) {
+                            return receipt;
+                        });
+                        return [2 /*return*/];
+                }
+            });
         });
     };
     Ocelot.prototype.safeTransfer = function (to, token_id) {
@@ -617,7 +737,9 @@ var Ocelot = /** @class */ (function () {
                     case 1:
                         if ((_a.sent()) !== from)
                             return [2 /*return*/, "You are not owner of the token"];
-                        config = this.transactionConfig();
+                        return [4 /*yield*/, this.transactionConfig()];
+                    case 2:
+                        config = _a.sent();
                         this.smart_contract.methods
                             .safeTransferFrom(from, to, token_id)
                             .send(config)

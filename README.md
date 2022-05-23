@@ -6,7 +6,7 @@ import { Ocelot } from "wildcats-ocelot";
 
 
 ### Object creation:
-var ocelot = new Ocelot(window.ethereum, window.ethereum.selectedAddress);
+var ocelot = new Ocelot(window.ethereum, window.ethereum.selectedAddress, "1"); //(provider, address, chainId)
 
 ------------
 

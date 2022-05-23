@@ -12,17 +12,23 @@ export class Ocelot{
     private web3 : Web3;
     private smart_contract : Contract;
     private account : string;
+    private contract_address : string;
     private MAX_CUSTOM_NFT : number;
     private MAX_NORMAL_NFT : number;
     private node;
 
-    constructor(provider : any, account : string){      
+    constructor(provider : any, account : string, chain_id : string){      
         this.web3 = new Web3(provider);
         this.account = account;
-        this.smart_contract = new this.web3.eth.Contract(ABI as AbiItem[],CONFIG.CONTRACT_ADDRESS);
+        this.contract_address = CONFIG["CONTRACT_ADDRESS_" + chain_id];
+        this.smart_contract = new this.web3.eth.Contract(ABI as AbiItem[],this.contract_address );
         this.MAX_CUSTOM_NFT = -1;
         this.MAX_NORMAL_NFT = -1;
         
+    }
+
+    public getContractAddress(){
+      return this.contract_address;
     }
 
     public async getCirculation(){
@@ -60,8 +66,6 @@ export class Ocelot{
     public getSymbolCollection(){
       return this.smart_contract.methods.symbol().call();
     }
-
-      
 
     public getApproved(token_id : number){
       return this.smart_contract.methods.getApproved(token_id).call();
@@ -172,11 +176,44 @@ export class Ocelot{
       return nfts;
     }
 
+    
+
     /**
-      * @param {number[]} token_id - List of the NFTs
-      * @return List of uri 
+      * @return {Promise<Array<number>>} - id of the nfts already minted
     */
-     public async listOfURI(token_id: Array<number>){
+    public async nftsMinted(): Promise<Array<number>>{
+      return (await this.customNftsMinted()).concat(await this.normalNftsMinted());
+    }
+
+    /**
+      * @return {Promise<Array<number>>} - id of the nfts already minted
+    */
+    public async customNftsMinted(): Promise<Array<number>>{
+      let token_id : Array<number> = new Array<number>();
+      let custom_ids = await this.getCirculationCustom()
+      for(var i = 0; i < custom_ids; i++){
+        token_id.push(i);
+      }
+      return token_id;
+    }
+
+    /**
+      * @return {Promise<Array<number>>} - id of the nfts already minted
+    */
+     public async normalNftsMinted(): Promise<Array<number>>{
+      let token_id : Array<number> = new Array<number>();
+      let normal_ids = await this.getCirculationNormal() + await this.maxCustomNFTs();
+      for(var i : number = await this.maxCustomNFTs(); i < normal_ids; i++){
+        token_id.push(i);
+      }
+      return token_id
+    }
+
+    /**
+      * @param {Array<number>} token_id - List of the NFTs
+      * @return {Promise<string[]>} List of uri 
+    */
+     public async listOfURI(token_id: Array<number>): Promise<string[]> {
       var i = 0;
       var uri : Array<string> = new Array<string>();
       while (i < token_id.length) {
@@ -187,52 +224,45 @@ export class Ocelot{
       return uri;
     }
 
-    /**
-      * @return {Array<number>} - id of the nfts already minted
-    */
-    public async nftsMinted(){
-      let token_id : Array<number> = new Array<number>();
-      let custom_ids = await this.getCirculationCustom()
-      for(var i = 0; i < custom_ids; i++){
-        token_id.push(i);
-      }
-      
-      let normal_ids = await this.getCirculationNormal() + await this.maxCustomNFTs();
-      for(var i : number = await this.maxCustomNFTs(); i < normal_ids; i++){
-        token_id.push(i);
-      }
-
-      return token_id;
-    }
 
     /**
-      * @return {number[], string[]} - id of the nft, uri of the nft
+      * @return {Promise<{ids : number[] , uris : string[]}>} - id of the nft, uri of the nft
     */
-    public async allURIs(){
+    public async allURIs(): Promise<{ids : number[] , uris : string[]}> {
       let token_id : number[] = await this.nftsMinted();
       return {ids : token_id, uris : await this.listOfURI(token_id)};
     }
 
     /**
       * @param {string} args - Address (Optional, if not passed will be used the address passed to the constructor)
-      * @return List of custom uri owned by the address
+      * @return {Promise<string[]>} List of custom uri owned by the address
     */
-    public async listOfCustomURI(...args: string[]){
+    public async listOfCustomURI(...args: string[]) : Promise<string[]>{
       return await this.listOfURI(await this.listOfCustomNftsOwned(this._getAddress(args)));
     }
 
     /**
       * @param {string} args - Address (Optional, if not passed will be used the address passed to the constructor)
-      * @return List of normal uri owned by the address
+      * @return {Promise<string[]>} List of normal uri owned by the address
     */
-     public async listOfNormalURI(...args: string[]){
+     public async listOfNormalURI(...args: string[]): Promise<string[]>{
       return await this.listOfURI(await this.listOfNormalNftsOwned(this._getAddress(args)));
     }
 
     // setting the IPFS, cannot be done in the constructor
     public async setIPFS(){
-      if(this.node == null)
+      if(this.node == null){
+        console.log("hola");
         this.node = await IPFS.create();
+        console.log(typeof this.node);
+      }
+    }
+    // setting the IPFS, cannot be done in the constructor
+    public async disconnectIPFS(){
+      if(this.node != null){
+        console.log("hola2");
+        this.node.swarm.disconnect();
+      }
     }
 
     /**
@@ -243,13 +273,15 @@ export class Ocelot{
       await this.setIPFS();
       console.log("CID:" + CID);
       const stream = this.node.cat(CID.trim())
+      
       let data = ''
       for await (const chunk of stream) {
         // chunks of data are returned as a Buffer, convert it back to a string
+        console.log("CIAO_LOOP");
         data += chunk.toString()
       }
+      console.log("CIAO_2");
       return data;
-      
     }
 
     /**
@@ -272,16 +304,44 @@ export class Ocelot{
       * @param {number} token_id - The token id
       * @return the json file
     */
-     public async getJson(token_id : number) : Promise<string>{
+    public async getJson(token_id : number) : Promise<string>{
       return await this.getFileFromIPFS(await this.getCID(token_id));
     }
+
+    /**
+      * @param {Array<number>} token_id - List of the NFTs
+      * @return {Promise<string[]>} List of json 
+    */
+     public async listOfJson(token_id : Array<number>) : Promise<string[]>{
+      var i = 0;
+        var uri : Array<string> = new Array<string>();
+        while (i < token_id.length) {
+          uri.push(await this.getJson(token_id[i]));
+          i++;
+        }
+  
+        return uri;
+    }
+
+
+    /**
+      * 
+      * @return {Promise<{ids : number[] , uris : string[]}>} all json file of NFTs minted
+    */
+     public async allJsons() : Promise<{ids : number[] , json : string[]}>{
+      let token_id : number[] = await this.nftsMinted();
+      console.log(token_id);
+      return {ids : token_id, json : await this.listOfJson(token_id)};
+    }
+
+
     
 
     // Mint a normal Ocelot
     public async mintOcelot(){
       let config =  {
           gasLimit: (await this.web3.eth.getBlock("latest")).gasLimit,
-          to: CONFIG.CONTRACT_ADDRESS,
+          to: this.contract_address ,
           from : this.account,
           value: await this.getPrice()
       }
@@ -302,7 +362,7 @@ export class Ocelot{
     private async transactionConfig(){
       return {
         gasLimit: (await this.web3.eth.getBlock("latest")).gasLimit,
-        to: CONFIG.CONTRACT_ADDRESS,
+        to: this.contract_address,
         from : this.account
       };
     }
