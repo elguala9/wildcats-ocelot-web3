@@ -10,6 +10,9 @@ var ocelot = new Ocelot(window.ethereum, window.ethereum.selectedAddress, "1"); 
 
 var ocelot = new Ocelot(window.ethereum, window.ethereum.selectedAddress, "4") // for test purpose
 
+## Interesting methods
+ocelot.listOfCustomNftsOwned(); // return the list of custom (0 - 109) Ocelot owned
+ocelot.listOfNormalNftsOwned(); // return the list of normal (110 - 620) Ocelot owned
 ------------
 
 ### Get the Web3 Object
