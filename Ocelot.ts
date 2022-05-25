@@ -5,7 +5,7 @@ import ABI from './abi.json';
 import { AbiItem } from 'web3-utils'
 //import { IPFS } from 'ipfs'
 //import { IPFS } from 'ipfs-core'
-import * as IPFS from 'ipfs-core'
+//import * as IPFS from 'ipfs-core'
 const CID = require('cids')
 
 export class Ocelot{
@@ -15,8 +15,7 @@ export class Ocelot{
     private contract_address : string;
     private MAX_CUSTOM_NFT : number;
     private MAX_NORMAL_NFT : number;
-    private node;
-
+    
     constructor(provider : any, account : string, chain_id : string){      
         this.web3 = new Web3(provider);
         this.account = account;
@@ -92,14 +91,14 @@ export class Ocelot{
       }
     }
 
-    public async maxCustomNFTs(){
+    public async maxCustomNFTs() : Promise<number> {
       if(this.MAX_CUSTOM_NFT == -1)
         this.MAX_CUSTOM_NFT = await this.smart_contract.methods.maxCustomNFTs().call();
       else
         return this.MAX_CUSTOM_NFT;
     }
 
-    public async maxNormalNFTs(){
+    public async maxNormalNFTs() : Promise<number> {
       if(this.MAX_NORMAL_NFT == -1)
         this.MAX_NORMAL_NFT = await this.smart_contract.methods.maxNormalNFTs().call();
       else
@@ -249,91 +248,7 @@ export class Ocelot{
       return await this.listOfURI(await this.listOfNormalNftsOwned(this._getAddress(args)));
     }
 
-    // setting the IPFS, cannot be done in the constructor
-    public async setIPFS(){
-      if(this.node == null){
-        console.log("hola");
-        this.node = await IPFS.create();
-        console.log(typeof this.node);
-      }
-    }
-    // setting the IPFS, cannot be done in the constructor
-    public async disconnectIPFS(){
-      if(this.node != null){
-        console.log("hola2");
-        this.node.swarm.disconnect();
-      }
-    }
-
-    /**
-      * @param {string} CID - Identifier of the file into the IPFS
-      * @return the file in string format
-    */
-     public async getFileFromIPFS(CID : string) : Promise<string>{
-      await this.setIPFS();
-      console.log("CID:" + CID);
-      const stream = this.node.cat(CID.trim())
-      
-      let data = ''
-      for await (const chunk of stream) {
-        // chunks of data are returned as a Buffer, convert it back to a string
-        console.log("CIAO_LOOP");
-        data += chunk.toString()
-      }
-      console.log("CIAO_2");
-      return data;
-    }
-
-    /**
-      * @param {number} token_id - The token id
-      * @return the CID
-    */
-    public async getCID(token_id : number) : Promise<string>{
-      return this.getCIDFromURI(await this.getTokenURI(token_id));
-    }
-
-    /**
-      * @param {string} uri - Uri of a nft
-      * @return the CID
-    */
-     public getCIDFromURI(uri : string) : string{
-      return uri.replace("ipfs://"," ");
-    }
-
-    /**
-      * @param {number} token_id - The token id
-      * @return the json file
-    */
-    public async getJson(token_id : number) : Promise<string>{
-      return await this.getFileFromIPFS(await this.getCID(token_id));
-    }
-
-    /**
-      * @param {Array<number>} token_id - List of the NFTs
-      * @return {Promise<string[]>} List of json 
-    */
-     public async listOfJson(token_id : Array<number>) : Promise<string[]>{
-      var i = 0;
-        var uri : Array<string> = new Array<string>();
-        while (i < token_id.length) {
-          uri.push(await this.getJson(token_id[i]));
-          i++;
-        }
-  
-        return uri;
-    }
-
-
-    /**
-      * 
-      * @return {Promise<{ids : number[] , uris : string[]}>} all json file of NFTs minted
-    */
-     public async allJsons() : Promise<{ids : number[] , json : string[]}>{
-      let token_id : number[] = await this.nftsMinted();
-      console.log(token_id);
-      return {ids : token_id, json : await this.listOfJson(token_id)};
-    }
-
+   
 
     
 
@@ -384,33 +299,7 @@ export class Ocelot{
       });
     }
 
-    public async safeTransfer(to : string, token_id : number){
-      return this.safeTransferFrom(this.account, to, token_id);
-    }
-    //
-    public async safeTransferFrom(from : string, to : string, token_id : number){
-      if(!this.web3.utils.isAddress(from))
-        return "From address is not valid";
-
-      if(!this.web3.utils.isAddress(to))
-        return "To address is not valid";
-
-      if((await this.getOwnerNFT(token_id)) !== from)
-        return "You are not owner of the token";
-
-      let config = await this.transactionConfig()
-      
-      this.smart_contract.methods
-      .safeTransferFrom(from, to, token_id)
-      .send(config)
-      .once("error", (err : any) => {
-        console.log(err);
-        return "Sorry, something went wrong please try again later.";
-      })
-      .then((receipt : any) => {
-        return receipt;
-      });
-    }
+    
 
 
 }
