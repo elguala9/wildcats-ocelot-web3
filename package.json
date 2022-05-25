@@ -1,6 +1,6 @@
 {
   "name": "wildcats-ocelot",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "Library web3 for the smart contract Ocelot",
   "main": "Ocelot.ts",
   "scripts": {
