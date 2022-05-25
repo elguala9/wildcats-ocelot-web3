@@ -92,15 +92,19 @@ export class Ocelot{
     }
 
     public async maxCustomNFTs() : Promise<number> {
-      if(this.MAX_CUSTOM_NFT == -1)
+      if(this.MAX_CUSTOM_NFT == -1){
         this.MAX_CUSTOM_NFT = await this.smart_contract.methods.maxCustomNFTs().call();
+        return this.MAX_CUSTOM_NFT;
+      }
       else
         return this.MAX_CUSTOM_NFT;
     }
 
     public async maxNormalNFTs() : Promise<number> {
-      if(this.MAX_NORMAL_NFT == -1)
+      if(this.MAX_NORMAL_NFT == -1){
         this.MAX_NORMAL_NFT = await this.smart_contract.methods.maxNormalNFTs().call();
+        return this.MAX_NORMAL_NFT;
+      }
       else
         return this.MAX_NORMAL_NFT;
     }
