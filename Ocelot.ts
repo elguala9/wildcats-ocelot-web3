@@ -1,6 +1,6 @@
 import Web3 from "web3";
 import { Contract } from 'web3-eth-contract';
-import * as CONFIG from './config.json'; 
+//import * as CONFIG from './config.json'; 
 import * as ABI from './abi.json'; 
 import { AbiItem } from 'web3-utils'
 //import { IPFS } from 'ipfs'
@@ -19,7 +19,18 @@ export class Ocelot{
     constructor(provider : any, account : string, chain_id : string){      
         this.web3 = new Web3(provider);
         this.account = account;
-        this.contract_address = CONFIG["CONTRACT_ADDRESS_" + chain_id];
+        //this.contract_address = CONFIG["CONTRACT_ADDRESS_" + chain_id];
+        switch(chain_id){
+        case "1":
+          this.contract_address = "0x";
+        case "4":
+        this.contract_address = "0x5A78c01ef6B0b9620811C6e827a67Cc42a142483"
+        default :{
+          throw("Error on chain id");
+        }
+      }
+
+
         this.smart_contract = new this.web3.eth.Contract(ABI as AbiItem[],this.contract_address );
         this.MAX_CUSTOM_NFT = -1;
         this.MAX_NORMAL_NFT = -1;
