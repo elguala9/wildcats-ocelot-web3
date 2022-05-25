@@ -23,8 +23,10 @@ export class Ocelot{
         switch(chain_id){
         case "1":
           this.contract_address = "0x";
+          break;
         case "4":
-        this.contract_address = "0x5A78c01ef6B0b9620811C6e827a67Cc42a142483"
+          this.contract_address = "0x5A78c01ef6B0b9620811C6e827a67Cc42a142483"
+          break;
         default :{
           throw("Error on chain id");
         }
