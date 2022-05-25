@@ -1,7 +1,7 @@
 import Web3 from "web3";
 import { Contract } from 'web3-eth-contract';
-import CONFIG from './config.json'; 
-import ABI from './abi.json'; 
+import * as CONFIG from './config.json'; 
+import * as ABI from './abi.json'; 
 import { AbiItem } from 'web3-utils'
 //import { IPFS } from 'ipfs'
 //import { IPFS } from 'ipfs-core'
