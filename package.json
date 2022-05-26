@@ -1,6 +1,6 @@
 {
   "name": "wildcats-ocelot",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "description": "Library web3 for the smart contract Ocelot",
   "main": "Ocelot.js",
   "scripts": {
@@ -21,9 +21,7 @@
   },
   "homepage": "https://github.com/elguala9/wildcats-ocelot-web3#readme",
   "dependencies": {
-    "url": "^0.11.0",
-    "web3": "^1.7.3",
-    "xhr2-cookies": "^1.1.0"
+    "web3": "^1.7.3"
   },
   "devDependencies": {
     "@types/node": "^17.0.25",
