@@ -1,12 +1,8 @@
 import Web3 from "web3";
 import { Contract } from 'web3-eth-contract';
-//import * as CONFIG from './config.json'; 
 import ABI from './abi.json'; 
 import { AbiItem } from 'web3-utils'
-//import { IPFS } from 'ipfs'
-//import { IPFS } from 'ipfs-core'
-//import * as IPFS from 'ipfs-core'
-//const CID = require('cids')
+
 
 export class Ocelot{
     private web3 : Web3;
