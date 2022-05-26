@@ -38,7 +38,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.Ocelot = void 0;
 var web3_1 = __importDefault(require("web3"));
 //import * as CONFIG from './config.json'; 
@@ -49,7 +49,7 @@ var abi_json_1 = __importDefault(require("./abi.json"));
 //const CID = require('cids')
 var Ocelot = /** @class */ (function () {
     function Ocelot(provider, account, chain_id) {
-        this.web3 = new web3_1["default"](provider);
+        this.web3 = new web3_1.default(provider);
         this.account = account;
         //this.contract_address = CONFIG["CONTRACT_ADDRESS_" + chain_id];
         switch (chain_id) {
@@ -63,7 +63,7 @@ var Ocelot = /** @class */ (function () {
                 throw ("Error on chain id");
             }
         }
-        this.smart_contract = new this.web3.eth.Contract(abi_json_1["default"], this.contract_address);
+        this.smart_contract = new this.web3.eth.Contract(abi_json_1.default, this.contract_address);
         this.MAX_CUSTOM_NFT = -1;
         this.MAX_NORMAL_NFT = -1;
     }
