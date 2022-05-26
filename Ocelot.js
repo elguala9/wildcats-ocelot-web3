@@ -448,14 +448,13 @@ var Ocelot = /** @class */ (function () {
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        _a = {};
-                        return [4 /*yield*/, this.web3.eth.getBlock("latest")];
-                    case 1:
-                        _a.gasLimit = (_b.sent()).gasLimit,
-                            _a.to = this.contract_address,
-                            _a.from = this.account;
+                        _a = {
+                            /*gasLimit: (await this.web3.eth.getBlock("latest")).gasLimit,
+                            to: this.contract_address ,*/
+                            from: this.account
+                        };
                         return [4 /*yield*/, this.getPrice()];
-                    case 2:
+                    case 1:
                         config = (_a.value = _b.sent(),
                             _a);
                         this.smart_contract.methods
@@ -476,17 +475,12 @@ var Ocelot = /** @class */ (function () {
     //configuration of the transction that is used when we start a non-payable transaction
     Ocelot.prototype.transactionConfig = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var _a;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        _a = {};
-                        return [4 /*yield*/, this.web3.eth.getBlock("latest")];
-                    case 1: return [2 /*return*/, (_a.gasLimit = (_b.sent()).gasLimit,
-                            _a.to = this.contract_address,
-                            _a.from = this.account,
-                            _a)];
-                }
+            return __generator(this, function (_a) {
+                return [2 /*return*/, {
+                        //gasLimit: (await this.web3.eth.getBlock("latest")).gasLimit,
+                        to: this.contract_address,
+                        from: this.account
+                    }];
             });
         });
     };

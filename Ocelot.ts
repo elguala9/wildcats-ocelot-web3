@@ -268,8 +268,8 @@ export class Ocelot{
     // Mint a normal Ocelot
     public async mintOcelot(){
       let config =  {
-          gasLimit: (await this.web3.eth.getBlock("latest")).gasLimit,
-          to: this.contract_address ,
+          /*gasLimit: (await this.web3.eth.getBlock("latest")).gasLimit,
+          to: this.contract_address ,*/
           from : this.account,
           value: await this.getPrice()
       }
@@ -289,7 +289,7 @@ export class Ocelot{
     //configuration of the transction that is used when we start a non-payable transaction
     private async transactionConfig(){
       return {
-        gasLimit: (await this.web3.eth.getBlock("latest")).gasLimit,
+        //gasLimit: (await this.web3.eth.getBlock("latest")).gasLimit,
         to: this.contract_address,
         from : this.account
       };
