@@ -304,13 +304,13 @@ export class Ocelot{
       this.smart_contract.methods
       .mintCustomOcelot()
       .send(config)
-      .once("error", (err : any) => {
+      /*.once("error", (err : any) => {
         console.log(err);
         return "Sorry, something went wrong please try again later.";
       })
       .then((receipt : any) => {
         return receipt;
-      });
+      })*/;
     }
 
     

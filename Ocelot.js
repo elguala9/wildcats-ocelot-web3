@@ -498,14 +498,7 @@ var Ocelot = /** @class */ (function () {
                         config = _a.sent();
                         this.smart_contract.methods
                             .mintCustomOcelot()
-                            .send(config)
-                            .once("error", function (err) {
-                            console.log(err);
-                            return "Sorry, something went wrong please try again later.";
-                        })
-                            .then(function (receipt) {
-                            return receipt;
-                        });
+                            .send(config);
                         return [2 /*return*/];
                 }
             });
