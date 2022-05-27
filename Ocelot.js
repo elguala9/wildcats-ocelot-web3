@@ -460,17 +460,17 @@ var Ocelot = /** @class */ (function () {
                     case 1:
                         config = (_a.value = _b.sent(),
                             _a);
-                        this.smart_contract.methods
-                            .mintOcelot()
-                            .send(config)
-                            .once("error", function (err) {
-                            console.log(err);
-                            return "Sorry, something went wrong please try again later.";
-                        })
-                            .then(function (receipt) {
-                            return receipt;
-                        });
-                        return [2 /*return*/];
+                        return [4 /*yield*/, this.smart_contract.methods
+                                .mintOcelot()
+                                .send(config)
+                                .once("error", function (err) {
+                                console.log(err);
+                                return "Sorry, something went wrong please try again later.";
+                            })
+                                .then(function (receipt) {
+                                return receipt;
+                            })];
+                    case 2: return [2 /*return*/, _b.sent()];
                 }
             });
         });

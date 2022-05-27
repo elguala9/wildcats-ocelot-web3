@@ -267,7 +267,7 @@ export class Ocelot{
     
 
     // Mint a normal Ocelot
-    public async mintOcelot(){
+    public async mintOcelot() : Promise<string>{
       let config =  {
           /*gasLimit: (await this.web3.eth.getBlock("latest")).gasLimit,
           to: this.contract_address ,*/
@@ -275,14 +275,14 @@ export class Ocelot{
           value: await this.getPrice()
       }
       
-      this.smart_contract.methods
+      return await this.smart_contract.methods
       .mintOcelot()
       .send(config)
       .once("error", (err : any) => {
         console.log(err);
         return "Sorry, something went wrong please try again later.";
       })
-      .then((receipt : any) => {
+      .then((receipt : string) => {
         return receipt;
       });
     }

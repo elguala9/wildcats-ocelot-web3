@@ -87,7 +87,7 @@ export declare class Ocelot {
       * @return {Promise<string[]>} List of normal uri owned by the address
     */
     listOfNormalURI(...args: string[]): Promise<string[]>;
-    mintOcelot(): Promise<void>;
+    mintOcelot(): Promise<string>;
     private transactionConfig;
     mintCustomOcelot(): Promise<void>;
 }
