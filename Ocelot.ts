@@ -130,8 +130,9 @@ export class Ocelot{
       return this.account;
     }
 
-
-
+    public getSmartContractAddress() : string{
+      return this.contract_address;
+    }
 
     private _getAddress(args: string[]){
       if(args.length > 1)
