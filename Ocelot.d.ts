@@ -28,6 +28,7 @@ export declare class Ocelot {
     getWeb3(): Web3;
     getSmartContract(): Contract;
     getAccount(): string;
+    getSmartContractAddress(): string;
     private _getAddress;
     /**
       * call normalNftOwned(address) method of the smart contract

@@ -175,6 +175,9 @@ var Ocelot = /** @class */ (function () {
     Ocelot.prototype.getAccount = function () {
         return this.account;
     };
+    Ocelot.prototype.getSmartContractAddress = function () {
+        return this.contract_address;
+    };
     Ocelot.prototype._getAddress = function (args) {
         if (args.length > 1)
             throw "Too much argument";
