@@ -267,7 +267,7 @@ export class Ocelot{
     
 
     // Mint a normal Ocelot
-    public async mintOcelot() : Promise<string>{
+    public async mintOcelot() : Promise<any>{
       let config =  {
           /*gasLimit: (await this.web3.eth.getBlock("latest")).gasLimit,
           to: this.contract_address ,*/
@@ -282,8 +282,9 @@ export class Ocelot{
         console.log(err);
         return "Sorry, something went wrong please try again later.";
       })
-      .then((receipt : string) => {
-        return receipt;
+      .then((receipt : any) => {
+        console.log(receipt.blockHash);
+        return receipt.blockHash;
       });
     }
 
@@ -297,20 +298,21 @@ export class Ocelot{
     }
 
     //Mint a custom Ocelot
-    public async mintCustomOcelot(){
+    public async mintCustomOcelot() : Promise<any>{
       
       let config = await this.transactionConfig()
       
       this.smart_contract.methods
       .mintCustomOcelot()
       .send(config)
-      /*.once("error", (err : any) => {
+      .once("error", (err : any) => {
         console.log(err);
         return "Sorry, something went wrong please try again later.";
       })
       .then((receipt : any) => {
-        return receipt;
-      })*/;
+        console.log(receipt.blockHash);
+        return receipt.blockHash;
+      });
     }
 
     

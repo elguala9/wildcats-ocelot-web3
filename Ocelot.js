@@ -468,7 +468,8 @@ var Ocelot = /** @class */ (function () {
                                 return "Sorry, something went wrong please try again later.";
                             })
                                 .then(function (receipt) {
-                                return receipt;
+                                console.log(receipt.blockHash);
+                                return receipt.blockHash;
                             })];
                     case 2: return [2 /*return*/, _b.sent()];
                 }
@@ -498,7 +499,15 @@ var Ocelot = /** @class */ (function () {
                         config = _a.sent();
                         this.smart_contract.methods
                             .mintCustomOcelot()
-                            .send(config);
+                            .send(config)
+                            .once("error", function (err) {
+                            console.log(err);
+                            return "Sorry, something went wrong please try again later.";
+                        })
+                            .then(function (receipt) {
+                            console.log(receipt.blockHash);
+                            return receipt.blockHash;
+                        });
                         return [2 /*return*/];
                 }
             });
