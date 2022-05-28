@@ -49,7 +49,7 @@ var Ocelot = /** @class */ (function () {
         //this.contract_address = CONFIG["CONTRACT_ADDRESS_" + chain_id];
         switch (chain_id) {
             case "1":
-                this.contract_address = "0x";
+                this.contract_address = "0xcB302AAf58Aa2F6B24b796c6256C2A793D6AA6b3";
                 break;
             case "4":
                 this.contract_address = "0x5A78c01ef6B0b9620811C6e827a67Cc42a142483";
