@@ -230,7 +230,8 @@ var Ocelot = /** @class */ (function () {
                         _a = this.listOfNftsOwned;
                         _b = [this._getAddress(args), 0];
                         return [4 /*yield*/, this.getCirculationCustom()];
-                    case 1: return [2 /*return*/, _a.apply(this, _b.concat([_c.sent()]))];
+                    case 1: return [4 /*yield*/, _a.apply(this, _b.concat([_c.sent()]))];
+                    case 2: return [2 /*return*/, _c.sent()];
                 }
             });
         });
@@ -255,25 +256,27 @@ var Ocelot = /** @class */ (function () {
                     case 1:
                         _b = _b.concat([_c.sent()]);
                         return [4 /*yield*/, this.getCirculationNormal()];
-                    case 2: return [2 /*return*/, _a.apply(this, _b.concat([_c.sent()]))];
+                    case 2: return [4 /*yield*/, _a.apply(this, _b.concat([_c.sent()]))];
+                    case 3: return [2 /*return*/, _c.sent()];
                 }
             });
         });
     };
     Ocelot.prototype.listOfNftsOwned = function (address, start_id, circulation) {
         return __awaiter(this, void 0, void 0, function () {
-            var nfts, i;
+            var nfts, max_id, i;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         nfts = new Array();
+                        max_id = +circulation + +start_id;
                         i = start_id;
                         _a.label = 1;
                     case 1:
-                        if (!(i < circulation)) return [3 /*break*/, 4];
+                        if (!(i < max_id)) return [3 /*break*/, 4];
                         return [4 /*yield*/, this.getOwnerNFT(i)];
                     case 2:
-                        if ((_a.sent()) === address)
+                        if ((_a.sent()) == address)
                             nfts.push(i);
                         _a.label = 3;
                     case 3:

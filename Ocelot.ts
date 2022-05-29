@@ -2,6 +2,7 @@ import Web3 from "web3";
 import { Contract } from 'web3-eth-contract';
 import ABI from './abi.json'; 
 import { AbiItem } from 'web3-utils'
+import { Console } from "console";
 
 
 export class Ocelot{
@@ -170,7 +171,7 @@ export class Ocelot{
       * @return List of custom NFTs owned by the address
     */
     public async listOfCustomNftsOwned(...args: string[]) : Promise<number[]>{
-      return this.listOfNftsOwned(this._getAddress(args), 0, await this.getCirculationCustom())
+      return await this.listOfNftsOwned(this._getAddress(args), 0, await this.getCirculationCustom())
     }
 
     /**
@@ -178,14 +179,16 @@ export class Ocelot{
       * @return List of normal NFTs owned by the address
     */
     public async listOfNormalNftsOwned(...args: string[]) : Promise<number[]>{
-      return this.listOfNftsOwned(this._getAddress(args), await this.maxCustomNFTs(), await this.getCirculationNormal())
+      return await this.listOfNftsOwned(this._getAddress(args), await this.maxCustomNFTs(), await this.getCirculationNormal())
     }
 
     private async listOfNftsOwned(address : string, start_id : number, circulation : number) : Promise<number[]>{
       var nfts : Array<number> = new Array<number>();
-      for(let  i = start_id; i < circulation; i++)
-        if(await this.getOwnerNFT(i) === address)
-          nfts.push(i);
+      let max_id = +circulation + +start_id;
+      for(let  i = start_id; i < max_id; i++){
+        if(await this.getOwnerNFT(i) == address)
+            nfts.push(i);
+        }
       return nfts;
     }
 
