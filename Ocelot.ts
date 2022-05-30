@@ -89,7 +89,7 @@ export class Ocelot{
     }
 
     public getAvailabeNFTs(){
-      return this.smart_contract.methods.availabeNFTs().call();
+      return this.smart_contract.methods.availableNFTs().call();
     }
 
     public async getTokenURI(token_id : number) : Promise<string> {
@@ -206,7 +206,7 @@ export class Ocelot{
     */
     public async customNftsMinted(): Promise<Array<number>>{
       let token_id : Array<number> = new Array<number>();
-      let custom_ids = await this.getCirculationCustom()
+      let custom_ids = await this.getCirculationCustom();
       for(var i = 0; i < custom_ids; i++){
         token_id.push(i);
       }
