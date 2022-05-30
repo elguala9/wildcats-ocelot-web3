@@ -88,7 +88,7 @@ export class Ocelot{
       return this.smart_contract.methods.getPrice().call();
     }
 
-    public getAvailabeNFTs(){
+    public getAvailableNFTs(){
       return this.smart_contract.methods.availableNFTs().call();
     }
 

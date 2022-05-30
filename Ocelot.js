@@ -112,7 +112,7 @@ var Ocelot = /** @class */ (function () {
     Ocelot.prototype.getPrice = function () {
         return this.smart_contract.methods.getPrice().call();
     };
-    Ocelot.prototype.getAvailabeNFTs = function () {
+    Ocelot.prototype.getAvailableNFTs = function () {
         return this.smart_contract.methods.availableNFTs().call();
     };
     Ocelot.prototype.getTokenURI = function (token_id) {

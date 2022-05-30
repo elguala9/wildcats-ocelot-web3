@@ -21,7 +21,7 @@ export declare class Ocelot {
     getApproved(token_id: number): any;
     isApprovedForAll(owner: string, operator: string): any;
     getPrice(): any;
-    getAvailabeNFTs(): any;
+    getAvailableNFTs(): any;
     getTokenURI(token_id: number): Promise<string>;
     maxCustomNFTs(): Promise<number>;
     maxNormalNFTs(): Promise<number>;
