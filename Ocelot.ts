@@ -22,7 +22,7 @@ export class Ocelot{
           this.contract_address = "0xcB302AAf58Aa2F6B24b796c6256C2A793D6AA6b3";
           break;
         case "4":
-          this.contract_address = "0x5A78c01ef6B0b9620811C6e827a67Cc42a142483"
+          this.contract_address = "0x0f4F82bB04737E8BB542e1A686326Dca13cFE979";
           break;
         default :{
           throw("Error on chain id");
