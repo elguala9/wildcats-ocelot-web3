@@ -52,7 +52,7 @@ var Ocelot = /** @class */ (function () {
                 this.contract_address = "0xcB302AAf58Aa2F6B24b796c6256C2A793D6AA6b3";
                 break;
             case "4":
-                this.contract_address = "0x5A78c01ef6B0b9620811C6e827a67Cc42a142483"; /*0x0f4F82bB04737E8BB542e1A686326Dca13cFE979*/
+                this.contract_address = "0x0f4F82bB04737E8BB542e1A686326Dca13cFE979";
                 break;
             default: {
                 throw ("Error on chain id");
@@ -264,19 +264,21 @@ var Ocelot = /** @class */ (function () {
     };
     Ocelot.prototype.listOfNftsOwned = function (address, start_id, circulation) {
         return __awaiter(this, void 0, void 0, function () {
-            var nfts, max_id, i;
+            var nfts, max_id, owner, i;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         nfts = new Array();
                         max_id = +circulation + +start_id;
+                        owner = "";
                         i = start_id;
                         _a.label = 1;
                     case 1:
                         if (!(i < max_id)) return [3 /*break*/, 4];
                         return [4 /*yield*/, this.getOwnerNFT(i)];
                     case 2:
-                        if ((_a.sent()) == address)
+                        owner = _a.sent();
+                        if (owner === address || owner.toLocaleLowerCase() === address)
                             nfts.push(i);
                         _a.label = 3;
                     case 3:

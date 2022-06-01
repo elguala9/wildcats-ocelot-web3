@@ -185,8 +185,10 @@ export class Ocelot{
     private async listOfNftsOwned(address : string, start_id : number, circulation : number) : Promise<number[]>{
       var nfts : Array<number> = new Array<number>();
       let max_id = +circulation + +start_id;
+      let owner : string = "";
       for(let  i = start_id; i < max_id; i++){
-        if(await this.getOwnerNFT(i) == address)
+        owner = await this.getOwnerNFT(i);
+        if(owner === address || owner.toLocaleLowerCase() === address)
             nfts.push(i);
         }
       return nfts;
